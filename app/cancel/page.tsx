@@ -8,7 +8,7 @@ export default function CancelPage() {
         Aucun souci. Vous pouvez reprendre votre commande quand vous voulez.
       </p>
       <Link href="/panier" className="mt-6 inline-block rounded-xl border px-4 py-2 hover:bg-gray-50">
-        Retour au panier
+        retour au panier
       </Link>
     </main>
   );
