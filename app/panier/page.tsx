@@ -2,8 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCart } from "@/store/cart";
 import { useState } from "react";
+import { useCart } from "@/store/cart";
 
 function formatEUR(priceCents: number) {
   return new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(
@@ -29,235 +29,195 @@ export default function CartPage() {
           })),
         }),
       });
-
       const data = await res.json();
       if (data?.url) {
         window.location.href = data.url;
       } else {
-        alert("Erreur checkout. Vérifie Stripe et tes variables .env.local");
+        alert("Erreur lors du paiement. Veuillez réessayer.");
         setIsCheckingOut(false);
       }
-    } catch (error) {
-      alert("Une erreur est survenue");
+    } catch {
+      alert("Une erreur est survenue.");
       setIsCheckingOut(false);
     }
   };
 
   return (
-    <main className="relative min-h-screen bg-gradient-to-b from-orange-50/30 via-white to-orange-50/20">
-      {/* Blobs décoratifs */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute top-0 right-0 h-96 w-96 rounded-full bg-gradient-to-br from-orange-400/15 to-orange-600/10 blur-3xl" />
-        <div className="absolute bottom-0 left-0 h-80 w-80 rounded-full bg-gradient-to-tr from-yellow-400/10 to-orange-500/10 blur-3xl" />
-      </div>
+    <main className="bg-cream min-h-screen py-10 sm:py-14">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
 
-      <div className="relative mx-auto max-w-7xl px-3 sm:px-4 lg:px-6 py-8 sm:py-12 lg:py-16">
-        {/* En-tête */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8 sm:mb-10">
-          <div>
-            <div className="inline-flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3">
-              <span className="text-3xl sm:text-4xl">🛒</span>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-gray-900">
-                Votre Panier
-              </h1>
-            </div>
-            <p className="text-sm sm:text-base text-gray-600">
-              {cart.items.length === 0 ? (
-                "Votre panier est vide"
-              ) : (
-                <span>
-                  <span className="font-bold text-orange-600">{cart.items.length}</span> article{cart.items.length > 1 ? 's' : ''} • 
-                  <span className="font-bold text-orange-600 ml-1">{cart.items.reduce((acc, i) => acc + i.qty, 0)}</span> produit{cart.items.reduce((acc, i) => acc + i.qty, 0) > 1 ? 's' : ''}
-                </span>
-              )}
-            </p>
-          </div>
-
-          <Link 
-            href="/boutique" 
-            className="group inline-flex items-center gap-2 rounded-xl sm:rounded-2xl border-2 border-orange-300 bg-white px-5 sm:px-6 py-2.5 sm:py-3 font-bold text-sm sm:text-base text-orange-700 hover:bg-orange-50 hover:border-orange-400 hover:scale-105 transition-all duration-300 shadow-sm"
-          >
-            <span className="group-hover:-translate-x-1 transition-transform">←</span>
-            <span>Continuer les achats</span>
-          </Link>
+        {/* Page title */}
+        <div className="flex items-center gap-3 mb-8 sm:mb-10">
+          <h1 className="font-playfair text-3xl sm:text-4xl font-bold text-dark">Mon Panier</h1>
+          {cart.items.length > 0 && (
+            <span className="flex items-center justify-center h-7 w-7 rounded-full bg-gold text-dark text-sm font-bold">
+              {cart.count}
+            </span>
+          )}
         </div>
 
         {cart.items.length === 0 ? (
-          /* Panier vide */
-          <div className="flex flex-col items-center justify-center py-16 sm:py-20 lg:py-24">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-orange-400/20 to-orange-600/20 blur-3xl rounded-full" />
-              <div className="relative bg-gradient-to-br from-orange-100 to-orange-50 rounded-full p-8 sm:p-10 shadow-xl border border-orange-200">
-                <span className="text-6xl sm:text-7xl md:text-8xl">🛒</span>
-              </div>
+          /* ── Empty cart ── */
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="mb-8">
+              <svg width="96" height="96" viewBox="0 0 96 96" fill="none" className="text-gold/20 mx-auto">
+                <path d="M24 8L12 24v56a8 8 0 008 8h56a8 8 0 008-8V24L72 8H24Z" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                <line x1="12" y1="24" x2="84" y2="24" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/>
+                <path d="M64 40a16 16 0 01-32 0" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
             </div>
-            
-            <h2 className="mt-8 text-2xl sm:text-3xl font-black text-gray-900">
+            <h2 className="font-playfair text-2xl sm:text-3xl font-bold text-dark mb-3">
               Votre panier est vide
             </h2>
-            <p className="mt-3 text-base sm:text-lg text-gray-600 text-center max-w-md">
-              Découvrez nos produits authentiques et ajoutez vos favoris au panier !
+            <p className="text-dark/50 text-base mb-8 max-w-sm">
+              Découvrez nos produits africains 100% naturels et ajoutez vos favoris.
             </p>
-
             <Link
               href="/boutique"
-              className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-orange-600 to-orange-500 px-8 py-4 text-white font-bold text-base sm:text-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+              className="inline-flex items-center gap-2 bg-gold text-dark font-bold px-8 py-4 rounded-full text-base hover:bg-gold-light hover:scale-105 transition-all duration-300"
             >
-              <span>Découvrir la boutique</span>
-              <span>→</span>
+              Découvrir nos produits →
             </Link>
           </div>
         ) : (
-          /* Panier avec produits */
-          <div className="grid gap-6 lg:gap-8 lg:grid-cols-3">
-            {/* Liste des produits */}
-            <div className="lg:col-span-2 space-y-3 sm:space-y-4">
-              {cart.items.map((item, idx) => (
-                <div 
-                  key={item.id} 
-                  className="group relative flex flex-col sm:flex-row items-start sm:items-center gap-4 rounded-2xl sm:rounded-3xl border-2 border-orange-200/50 bg-white p-4 sm:p-5 shadow-md hover:shadow-xl hover:border-orange-400 transition-all duration-300"
-                  style={{ animationDelay: `${idx * 0.05}s` }}
+          /* ── Cart with items ── */
+          <div className="grid gap-8 lg:grid-cols-3 lg:items-start">
+
+            {/* LEFT — Cart items */}
+            <div className="lg:col-span-2 space-y-4">
+              {cart.items.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-cream-dark hover:border-gold/20 transition-colors"
                 >
-                  {/* Image produit */}
-                  <div className="relative h-20 w-20 sm:h-24 sm:w-24 overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-orange-100 to-orange-50 flex-shrink-0 shadow-md">
+                  {/* Image */}
+                  <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-cream-dark flex-shrink-0">
                     {item.image ? (
-                      <Image 
-                        src={item.image} 
-                        alt={item.title} 
-                        fill 
-                        className="object-cover group-hover:scale-110 transition-transform duration-500" 
-                      />
+                      <Image src={item.image} alt={item.title} fill className="object-cover" sizes="80px" />
                     ) : (
-                      <div className="flex items-center justify-center h-full text-3xl">📦</div>
+                      <div className="flex h-full items-center justify-center text-2xl"
+                        style={{ background: "linear-gradient(135deg, #111111, #1A1A1A)" }}>
+                        <span className="font-playfair text-2xl text-gold/60">
+                          {item.title.charAt(0)}
+                        </span>
+                      </div>
                     )}
                   </div>
 
-                  {/* Info produit */}
-                  <div className="min-w-0 flex-1">
-                    <h3 className="font-black text-base sm:text-lg text-gray-900 mb-1 group-hover:text-orange-700 transition-colors">
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-playfair font-semibold text-dark text-base leading-tight mb-0.5">
                       {item.title}
-                    </h3>
-                    <p className="text-sm sm:text-base text-gray-600 mb-2">
-                      Prix unitaire: <span className="font-bold text-orange-600">{formatEUR(item.priceCents)}</span>
                     </p>
-                    <p className="text-xs sm:text-sm font-semibold text-gray-700">
-                      Sous-total: <span className="text-orange-600">{formatEUR(item.priceCents * item.qty)}</span>
+                    <p className="text-dark/50 text-sm">
+                      {formatEUR(item.priceCents)} / unité
+                    </p>
+                    <p className="font-bold text-dark text-base mt-0.5">
+                      {formatEUR(item.priceCents * item.qty)}
                     </p>
                   </div>
 
-                  {/* Contrôles quantité */}
-                  <div className="flex items-center gap-3 sm:gap-4">
-                    <div className="flex items-center gap-2 sm:gap-3 rounded-xl sm:rounded-2xl border-2 border-orange-200 bg-orange-50 p-1 sm:p-1.5 shadow-sm">
+                  {/* Qty controls */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center rounded-full border-2 border-gold/30 overflow-hidden">
                       <button
-                        className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-white border border-orange-300 font-bold text-orange-700 hover:bg-orange-600 hover:text-white hover:border-orange-600 transition-all duration-300 flex items-center justify-center shadow-sm hover:shadow-md"
                         onClick={() => cart.dec(item.id)}
+                        className="w-9 h-9 flex items-center justify-center text-dark/60 bg-gold/10 hover:bg-gold hover:text-dark transition-colors font-bold"
+                        aria-label="Diminuer"
                       >
                         −
                       </button>
-                      <span className="w-8 sm:w-10 text-center font-black text-base sm:text-lg text-gray-900">
-                        {item.qty}
-                      </span>
+                      <span className="w-8 text-center font-bold text-dark text-sm">{item.qty}</span>
                       <button
-                        className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg sm:rounded-xl bg-white border border-orange-300 font-bold text-orange-700 hover:bg-orange-600 hover:text-white hover:border-orange-600 transition-all duration-300 flex items-center justify-center shadow-sm hover:shadow-md"
                         onClick={() => cart.inc(item.id)}
+                        className="w-9 h-9 flex items-center justify-center text-dark/60 bg-gold/10 hover:bg-gold hover:text-dark transition-colors font-bold"
+                        aria-label="Augmenter"
                       >
                         +
                       </button>
                     </div>
 
-                    {/* Bouton retirer */}
+                    {/* Remove */}
                     <button
-                      className="rounded-xl sm:rounded-2xl border-2 border-red-200 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-red-600 hover:bg-red-500 hover:text-white hover:border-red-500 transition-all duration-300 shadow-sm hover:shadow-md"
                       onClick={() => cart.remove(item.id)}
+                      className="w-9 h-9 flex items-center justify-center rounded-full border-2 border-red-200 text-red-400 hover:bg-red-500 hover:text-white hover:border-red-500 transition-all"
+                      aria-label="Retirer"
                     >
-                      🗑️ <span className="hidden sm:inline">Retirer</span>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
+                      </svg>
                     </button>
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Récapitulatif */}
-            <aside className="lg:sticky lg:top-8 h-fit">
-              <div className="rounded-2xl sm:rounded-3xl border-2 border-orange-200 bg-white p-5 sm:p-6 lg:p-8 shadow-xl">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg">
-                    <span className="text-2xl">💰</span>
-                  </div>
-                  <h2 className="text-xl sm:text-2xl font-black text-gray-900">
-                    Récapitulatif
-                  </h2>
-                </div>
+            {/* RIGHT — Order summary (sticky) */}
+            <aside className="lg:sticky lg:top-28">
+              <div className="bg-white rounded-2xl border-2 border-gold/20 shadow-lg p-6">
+                <h2 className="font-playfair text-xl font-bold text-dark mb-5">Récapitulatif</h2>
 
-                {/* Détails */}
-                <div className="space-y-3 mb-6 pb-6 border-b-2 border-orange-100">
-                  <div className="flex items-center justify-between text-sm sm:text-base">
-                    <span className="text-gray-600">Sous-total</span>
-                    <span className="font-bold text-gray-900">{formatEUR(cart.totalCents)}</span>
+                {/* Lines */}
+                <div className="space-y-3 mb-5 pb-5 border-b border-cream-dark">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-dark/60">Sous-total</span>
+                    <span className="font-semibold text-dark">{formatEUR(cart.totalCents)}</span>
                   </div>
-                  <div className="flex items-center justify-between text-sm sm:text-base">
-                    <span className="text-gray-600">Livraison</span>
-                    <span className="font-bold text-green-600">Gratuite</span>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-dark/60">Livraison</span>
+                    <span className="text-dark/50 italic">Calculée à la commande</span>
                   </div>
                 </div>
 
-                {/* Total */}
-                <div className="flex items-center justify-between mb-6 p-4 rounded-2xl bg-gradient-to-r from-orange-50 to-orange-100">
-                  <span className="text-lg sm:text-xl font-bold text-gray-900">Total</span>
-                  <span className="text-2xl sm:text-3xl font-black text-orange-600">
-                    {formatEUR(cart.totalCents)}
-                  </span>
+                {/* Total — gold bg badge for contrast */}
+                <div className="flex justify-between items-center mb-6 bg-gold rounded-2xl px-4 py-3">
+                  <span className="font-bold text-dark text-base">Total</span>
+                  <span className="font-playfair font-black text-3xl text-dark">{formatEUR(cart.totalCents)}</span>
                 </div>
 
-                {/* Bouton paiement */}
+                {/* Checkout CTA */}
                 <button
-                  className="w-full rounded-xl sm:rounded-2xl bg-gradient-to-r from-orange-600 to-orange-500 px-6 py-4 text-white font-black text-base sm:text-lg shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                   onClick={handleCheckout}
                   disabled={isCheckingOut}
+                  className="w-full bg-gold text-dark font-bold py-4 rounded-full text-base hover:bg-gold-light hover:scale-[1.02] transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2 shadow-lg shadow-gold/20"
                 >
                   {isCheckingOut ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <span className="animate-spin">⏳</span>
-                      <span>Chargement...</span>
-                    </span>
+                    <>
+                      <svg className="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                      </svg>
+                      Chargement...
+                    </>
                   ) : (
-                    <span className="flex items-center justify-center gap-2">
-                      <span>Passer au paiement</span>
-                      <span>🔒</span>
-                    </span>
+                    <>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                        <line x1="1" y1="10" x2="23" y2="10"/>
+                      </svg>
+                      Passer au paiement
+                    </>
                   )}
                 </button>
 
-                {/* Bouton vider */}
+                {/* Clear cart */}
                 <button
-                  className="mt-3 w-full rounded-xl sm:rounded-2xl border-2 border-gray-300 bg-white px-6 py-3 text-gray-700 font-bold text-sm sm:text-base hover:bg-gray-50 hover:border-gray-400 transition-all duration-300"
-                  onClick={() => {
-                  
-                  }}
+                  onClick={() => cart.clear()}
+                  className="mt-3 w-full text-sm text-red-400 hover:text-red-600 transition-colors py-2"
                 >
                   Vider le panier
                 </button>
 
-                {/* Badge de sécurité */}
-                <div className="mt-6 flex items-center justify-center gap-2 text-xs sm:text-sm text-gray-600">
-                  <span>🔒</span>
-                  <span>Paiement 100% sécurisé</span>
-                </div>
-
-                {/* Badges confiance */}
-                <div className="mt-4 grid grid-cols-2 gap-2">
-                  {[
-                    { icon: "✅", text: "Qualité garantie" },
-                    { icon: "🚚", text: "Livraison rapide" }
-                  ].map((badge) => (
-                    <div 
-                      key={badge.text}
-                      className="flex items-center gap-1.5 rounded-xl bg-orange-50 border border-orange-200 px-2 py-2 text-xs font-semibold text-gray-700"
-                    >
-                      <span>{badge.icon}</span>
-                      <span>{badge.text}</span>
-                    </div>
-                  ))}
+                {/* Security */}
+                <div className="mt-5 pt-5 border-t border-cream-dark space-y-2">
+                  <div className="flex items-center justify-center gap-2 text-xs text-dark/40">
+                    <span>🔒</span>
+                    <span>Paiement sécurisé Stripe</span>
+                  </div>
+                  <div className="flex items-center justify-center gap-2 text-xs text-dark/40">
+                    <span>✅</span>
+                    <span>Connexion SSL chiffrée</span>
+                  </div>
                 </div>
               </div>
             </aside>

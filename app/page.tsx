@@ -1,226 +1,281 @@
-import Image from "next/image";
 import Link from "next/link";
+import Image from "next/image";
 import ProductCard from "@/components/ProductCard";
-import { products } from "@/data/products";
+import { getProducts } from "@/data/products";
+import { supabase } from "@/lib/supabase";
 
-export default function HomePage() {
-  const preview = products.slice(0, 6);
+async function getUpcomingEvents() {
+  try {
+    const { data } = await supabase
+      .from("events")
+      .select("*")
+      .eq("is_published", true)
+      .gte("event_date", new Date().toISOString())
+      .order("event_date", { ascending: true })
+      .limit(2);
+    return data ?? [];
+  } catch {
+    return [];
+  }
+}
+
+function formatEventDate(dateStr: string) {
+  const d = new Date(dateStr);
+  return {
+    day: d.toLocaleDateString("fr-FR", { day: "2-digit" }),
+    month: d.toLocaleDateString("fr-FR", { month: "short" }).toUpperCase(),
+    full: d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" }),
+  };
+}
+
+export default async function HomePage() {
+  const [allProducts, events] = await Promise.all([getProducts(), getUpcomingEvents()]);
+  const preview = allProducts.slice(0, 6);
 
   return (
-    <main className="mx-auto max-w-7xl px-3 sm:px-4 lg:px-6">
-      {/* HERO SECTION - Design moderne avec animations subtiles */}
-      <section className="relative min-h-[85vh] flex items-center py-8 sm:py-12 lg:py-16">
-        {/* Blobs d'arrière-plan animés */}
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -top-32 -right-32 h-96 w-96 rounded-full bg-gradient-to-br from-orange-400/30 to-orange-600/20 blur-3xl animate-pulse" />
-          <div className="absolute top-1/2 -left-40 h-80 w-80 rounded-full bg-gradient-to-tr from-orange-300/25 to-yellow-400/15 blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-          <div className="absolute -bottom-32 right-1/4 h-72 w-72 rounded-full bg-gradient-to-bl from-orange-500/20 to-red-400/15 blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
+    <main>
+      {/* ═══════════════════════════════════════════════
+          HERO SECTION
+      ═══════════════════════════════════════════════ */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        {/* Background image */}
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="/hero_section.jpg"
+            alt="Al Xadiimiya — Produits africains naturels"
+            fill
+            className="object-cover object-center"
+            priority
+            quality={90}
+          />
+          {/* Dark overlay for text readability */}
+          <div className="absolute inset-0 bg-[#111111]/65" />
+          {/* Gold gradient overlay at bottom for smooth transition */}
+          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#111111] to-transparent" />
         </div>
 
-        <div className="relative z-10 grid gap-8 lg:grid-cols-2 lg:items-center w-full">
-          {/* Contenu gauche */}
-          <div className="space-y-6 sm:space-y-8">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 sm:gap-2.5 rounded-full bg-gradient-to-r from-orange-100 to-orange-50 border border-orange-200/60 px-3 sm:px-4 py-1.5 sm:py-2 shadow-sm">
-              <span className="relative flex h-2 w-2 sm:h-2.5 sm:w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-500 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 sm:h-2.5 sm:w-2.5 bg-orange-600"></span>
-              </span>
-              <span className="text-[10px] sm:text-xs md:text-sm font-bold text-orange-800 tracking-wide">
-                100% Africain • Naturel • Authentique
-              </span>
-            </div>
+        {/* Content */}
+        <div className="relative z-10 text-center px-4 sm:px-6 max-w-4xl mx-auto py-20">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 border border-gold/40 bg-gold/10 text-gold rounded-full px-4 py-1.5 text-sm mb-8 animate-fadeInUp">
+            <span>🌿</span>
+            <span>100% Naturels • Livraison Europe</span>
+          </div>
 
-            {/* Titre principal */}
-            <div className="space-y-3 sm:space-y-4">
-              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-gray-900 leading-tight">
-                AL-XADIIMIYA
-                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-orange-500 mt-1 sm:mt-2">
-                  SERVICES
+          {/* H1 */}
+          <h1
+            className="font-playfair font-bold leading-none mb-4 animate-fadeInUp stagger-1"
+            style={{ fontSize: "clamp(3rem, 8vw, 7rem)", background: "linear-gradient(135deg, #D4A843, #E8C97A)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}
+          >
+            Al Xadiimiya
+          </h1>
+
+          {/* H2 subtitle */}
+          <h2 className="text-cream/70 tracking-[0.4em] sm:tracking-[0.5em] uppercase font-light text-base sm:text-xl mb-4 animate-fadeInUp stagger-2">
+            Services
+          </h2>
+
+          {/* Tagline */}
+          <p className="font-playfair italic text-gold/70 text-lg sm:text-xl mb-10 animate-fadeInUp stagger-3">
+            "La qualité, notre priorité"
+          </p>
+
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fadeInUp stagger-4">
+            <Link
+              href="/boutique"
+              className="inline-flex items-center justify-center gap-2 bg-gold text-dark font-bold px-8 py-4 rounded-full text-base hover:bg-gold-light hover:scale-105 transition-all duration-300 animate-pulse-gold"
+            >
+              Découvrir nos produits
+              <span>→</span>
+            </Link>
+            <a
+              href="#about"
+              className="inline-flex items-center justify-center gap-2 border-2 border-gold text-gold px-8 py-4 rounded-full text-base hover:bg-gold hover:text-dark transition-all duration-300"
+            >
+              En savoir plus
+            </a>
+          </div>
+        </div>
+
+        {/* Scroll indicator */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-gold/40 animate-float">
+          <span className="text-xs tracking-widest uppercase">Défiler</span>
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════
+          ABOUT STRIP
+      ═══════════════════════════════════════════════ */}
+      <section id="about" className="bg-cream py-16 sm:py-20 lg:py-24">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
+            {/* Left — Story */}
+            <div>
+              <div className="flex items-center gap-4 mb-6">
+                <div className="h-px w-12 bg-gold" />
+                <span className="text-xs tracking-[0.3em] text-dark/50 uppercase font-semibold">Notre Histoire</span>
+              </div>
+              <h2 className="font-playfair text-3xl sm:text-4xl font-bold text-dark mb-6">
+                Des saveurs africaines,<br />
+                <span className="relative inline-block">
+                  <span className="relative z-10">livrées chez vous</span>
+                  <span className="absolute bottom-1 left-0 right-0 h-3 bg-gold/30 -z-0 rounded" />
                 </span>
-              </h1>
-              
-              <p className="text-base sm:text-lg md:text-xl leading-relaxed text-gray-600 max-w-xl">
-                Café Touba, céréales, fruits secs, sirops et confitures. Une sélection
-                soignée, un goût vrai, une qualité qui se remarque dès la première commande.
+              </h2>
+              <p className="text-dark/70 leading-relaxed text-base sm:text-lg mb-4">
+                Al Xadiimiya Services est née d&apos;une passion pour les trésors culinaires d&apos;Afrique. Nous sélectionnons avec soin chaque produit — céréales, épices, boissons, superfoods — pour vous offrir une qualité authentique et traçable.
+              </p>
+              <p className="text-dark/60 leading-relaxed text-sm sm:text-base">
+                Implantée en France, nous livrons nos produits 100% naturels partout en Europe, avec un emballage soigné qui préserve leur fraîcheur et leurs bienfaits.
               </p>
             </div>
 
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-2">
-              <Link
-                href="/boutique"
-                className="group relative rounded-xl sm:rounded-2xl bg-gradient-to-r from-orange-600 to-orange-500 px-6 sm:px-8 py-3 sm:py-4 text-white text-center font-bold text-base sm:text-lg shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 hover:scale-105 transition-all duration-300"
-              >
-                <span className="relative z-10">Découvrir la boutique</span>
-                <div className="absolute inset-0 rounded-xl sm:rounded-2xl bg-gradient-to-r from-orange-700 to-orange-600 opacity-0 group-hover:opacity-100 transition-opacity" />
-              </Link>
-
-              <a
-                href="#produits"
-                className="rounded-xl sm:rounded-2xl border-2 border-orange-300 bg-white px-6 sm:px-8 py-3 sm:py-4 text-orange-700 text-center font-bold text-base sm:text-lg hover:bg-orange-50 hover:border-orange-400 hover:scale-105 transition-all duration-300 shadow-sm"
-              >
-                Voir nos produits
-              </a>
-            </div>
-
-            {/* Trust badges */}
-            <div className="flex flex-wrap gap-2 sm:gap-3 pt-2 sm:pt-4">
+            {/* Right — Feature pills */}
+            <div className="grid grid-cols-1 gap-4">
               {[
-                { icon: "✅", text: "Qualité garantie" },
-                { icon: "🚚", text: "Livraison rapide" },
-                { icon: "📦", text: "Emballage soigné" },
-                { icon: "🌿", text: "100% Naturel" }
-              ].map((badge) => (
-                <div key={badge.text} className="flex items-center gap-1.5 sm:gap-2 rounded-full bg-white border border-gray-200 px-3 sm:px-4 py-1.5 sm:py-2 shadow-sm hover:shadow-md transition-shadow">
-                  <span className="text-sm sm:text-base">{badge.icon}</span>
-                  <span className="text-xs sm:text-sm font-semibold text-gray-700">{badge.text}</span>
+                { icon: "🌿", title: "Produits naturels", desc: "Sélection rigoureuse, zéro additif, 100% naturel." },
+                { icon: "🚚", title: "Livraison Europe", desc: "Expédition soignée partout en Europe depuis la France." },
+                { icon: "⭐", title: "Qualité garantie", desc: "Nous ne vendons que ce que nous mangeons nous-mêmes." },
+              ].map((f) => (
+                <div key={f.title} className="flex items-start gap-4 bg-white rounded-2xl p-5 shadow-sm border border-cream-dark hover:shadow-md hover:border-gold/30 transition-all duration-300">
+                  <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-gold flex items-center justify-center text-2xl">
+                    {f.icon}
+                  </div>
+                  <div>
+                    <p className="font-semibold text-dark text-sm">{f.title}</p>
+                    <p className="text-dark/60 text-sm mt-0.5">{f.desc}</p>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
+        </div>
+      </section>
 
-          {/* Visuel droite */}
-          <div className="relative lg:ml-12 mt-8 lg:mt-0">
-            {/* Card principale avec image placeholder */}
-            <div className="relative rounded-2xl sm:rounded-3xl bg-gradient-to-br from-orange-100 via-orange-50 to-white p-4 sm:p-6 lg:p-8 shadow-2xl border border-orange-200/50">
-              <div className="aspect-[4/3] rounded-xl sm:rounded-2xl bg-gradient-to-br from-white to-orange-50 shadow-lg border border-orange-100 overflow-hidden flex items-center justify-center relative group">
-                <Image
-                  src="/hero_section.png"
-                  alt="Panier de produits - Café Touba"
-                  fill
-                  className="object-cover"
-                  priority
-                />
-              </div>
+      {/* ═══════════════════════════════════════════════
+          PRODUCTS PREVIEW
+      ═══════════════════════════════════════════════ */}
+      <section id="produits" className="bg-white py-16 sm:py-20 lg:py-24">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          {/* Header */}
+          <div className="text-center mb-12">
+            <p className="text-xs tracking-[0.4em] text-dark/50 uppercase font-semibold mb-3">Nos Produits</p>
+            <h2 className="font-playfair text-3xl sm:text-4xl font-bold text-dark mb-4">
+              Sélection du moment
+            </h2>
+            <div className="w-16 h-1 bg-gold mx-auto rounded-full" />
+          </div>
 
-              {/* Stats cards */}
-              <div className="mt-4 sm:mt-6 grid grid-cols-3 gap-2 sm:gap-4">
-                {[
-                  { label: "Naturel", value: "100%" },
-                  { label: "Goût", value: "Authentique" },
-                  { label: "Sélection", value: "Premium" }
-                ].map((stat) => (
-                  <div key={stat.label} className="rounded-xl sm:rounded-2xl border border-orange-200 bg-white p-2 sm:p-4 text-center shadow-sm hover:shadow-md hover:scale-105 transition-all">
-                    <p className="text-[10px] sm:text-xs font-semibold text-gray-600 uppercase tracking-wide">{stat.label}</p>
-                    <p className="mt-0.5 sm:mt-1 font-black text-gray-900 text-xs sm:text-sm md:text-base">{stat.value}</p>
+          {/* Product grid */}
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {preview.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+
+          {/* CTA */}
+          <div className="mt-12 text-center">
+            <Link
+              href="/boutique"
+              className="inline-flex items-center gap-2 bg-dark text-gold font-bold px-8 py-4 rounded-full text-base hover:bg-gold hover:text-dark transition-all duration-300 border-2 border-gold/30 hover:border-gold"
+            >
+              Voir tous nos produits
+              <span>→</span>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════
+          EVENTS PREVIEW
+      ═══════════════════════════════════════════════ */}
+      <section className="bg-dark py-16 sm:py-20 lg:py-24 relative overflow-hidden">
+        {/* Decorative blob */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-gold/5 blur-3xl" />
+        </div>
+        <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <p className="text-xs tracking-[0.4em] text-gold/60 uppercase font-semibold mb-3">Agenda</p>
+            <h2 className="font-playfair text-3xl sm:text-4xl font-bold text-cream">
+              Nos Événements
+            </h2>
+          </div>
+
+          {events.length === 0 ? (
+            <div className="text-center py-16 border border-gold/20 rounded-2xl">
+              <p className="font-playfair text-2xl text-gold/60 italic">Événements à venir</p>
+              <p className="text-cream/40 text-sm mt-3">Restez connectés pour nos prochaines dates !</p>
+            </div>
+          ) : (
+            <div className="grid gap-6 sm:grid-cols-2">
+              {events.map((event: { id: string; title: string; location?: string | null; description?: string | null; event_date: string }) => {
+                const date = formatEventDate(event.event_date);
+                return (
+                  <div key={event.id} className="flex gap-0 rounded-2xl overflow-hidden border border-gold/20 hover:border-gold/40 transition-colors group">
+                    {/* Date badge */}
+                    <div className="flex-shrink-0 w-20 bg-gold/10 border-r border-gold/20 flex flex-col items-center justify-center py-6">
+                      <span className="font-playfair text-3xl font-bold text-gold">{date.day}</span>
+                      <span className="text-xs text-gold/60 tracking-wider">{date.month}</span>
+                    </div>
+                    {/* Content */}
+                    <div className="flex-1 p-5">
+                      <p className="font-playfair text-lg font-semibold text-cream group-hover:text-gold transition-colors">
+                        {event.title}
+                      </p>
+                      {event.location && (
+                        <p className="text-gold/60 text-sm mt-1 flex items-center gap-1">
+                          <span>📍</span>{event.location}
+                        </p>
+                      )}
+                      {event.description && (
+                        <p className="text-cream/50 text-sm mt-2 line-clamp-2">{event.description}</p>
+                      )}
+                    </div>
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
+          )}
 
-            {/* Élément décoratif flottant */}
-            <div className="absolute -top-6 -right-6 w-32 h-32 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 opacity-20 blur-2xl animate-pulse" />
-            <div className="absolute -bottom-6 -left-6 w-40 h-40 rounded-full bg-gradient-to-tr from-yellow-400 to-orange-500 opacity-20 blur-2xl animate-pulse" style={{ animationDelay: '1.5s' }} />
+          <div className="mt-10 text-center">
+            <Link
+              href="/evenements"
+              className="inline-flex items-center gap-2 border border-gold/40 text-gold px-6 py-3 rounded-full text-sm hover:bg-gold/10 transition-all"
+            >
+              Voir tous les événements →
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* BENEFITS - Design cards moderne */}
-      <section className="py-12 sm:py-16 lg:py-20 relative">
-        <div className="text-center mb-8 sm:mb-12">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-gray-900">
-            Pourquoi nous choisir ?
-          </h2>
-          <p className="mt-2 sm:mt-3 text-base sm:text-lg text-gray-600">
-            Ce qui fait la différence AL-XADIIMIYA
-          </p>
-        </div>
-
-        <div className="grid gap-4 sm:gap-6 md:grid-cols-3 relative z-10">
-          {[
-            { 
-              title: "Qualité avant tout", 
-              desc: "Des produits choisis avec soin, pour une expérience fiable à chaque commande.", 
-              icon: "🏅",
-              gradient: "from-orange-500 to-orange-600"
-            },
-            { 
-              title: "Saveurs du pays", 
-              desc: "Une boutique pensée pour retrouver des goûts authentiques et naturels.", 
-              icon: "🌿",
-              gradient: "from-orange-600 to-red-600"
-            },
-            { 
-              title: "Service simple", 
-              desc: "Navigation rapide, panier clair, commande facile. Zéro prise de tête.", 
-              icon: "⚡",
-              gradient: "from-orange-400 to-orange-500"
-            },
-          ].map((benefit, idx) => (
-            <div 
-              key={benefit.title} 
-              className="group relative rounded-2xl sm:rounded-3xl bg-white p-6 sm:p-8 shadow-lg border border-gray-100 hover:shadow-2xl hover:scale-105 transition-all duration-300"
-              style={{ animationDelay: `${idx * 0.1}s` }}
-            >
-              {/* Gradient overlay on hover */}
-              <div className={`absolute inset-0 rounded-2xl sm:rounded-3xl bg-gradient-to-br ${benefit.gradient} opacity-0 group-hover:opacity-5 transition-opacity`} />
-              
-              <div className="relative z-10">
-                <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl bg-gradient-to-br from-orange-100 to-orange-50 shadow-sm group-hover:scale-110 transition-transform">
-                  <span className="text-2xl sm:text-3xl">{benefit.icon}</span>
-                </div>
-                
-                <h3 className="mt-4 sm:mt-5 text-lg sm:text-xl font-black text-gray-900 group-hover:text-orange-700 transition-colors">
-                  {benefit.title}
-                </h3>
-                
-                <p className="mt-2 sm:mt-3 text-sm sm:text-base text-gray-600 leading-relaxed">
-                  {benefit.desc}
-                </p>
+      {/* ═══════════════════════════════════════════════
+          TRUST BADGES
+      ═══════════════════════════════════════════════ */}
+      <section className="bg-cream py-16 sm:py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            {[
+              { icon: "🏆", title: "Qualité exceptionnelle", desc: "Chaque produit rigoureusement sélectionné." },
+              { icon: "🌿", title: "100% Naturel", desc: "Aucun additif, aucun artifice." },
+              { icon: "🚚", title: "Livraison Europe", desc: "Expédition soignée dans toute l'Europe." },
+              { icon: "📦", title: "Emballage soigné", desc: "Vos commandes protégées et préservées." },
+            ].map((badge, i) => (
+              <div
+                key={badge.title}
+                className="bg-white rounded-2xl p-6 text-center shadow-sm border border-cream-dark hover:shadow-lg hover:-translate-y-1 hover:border-gold/30 transition-all duration-300 animate-fadeInUp"
+                style={{ animationDelay: `${i * 0.1}s` }}
+              >
+                <div className="text-4xl mb-4">{badge.icon}</div>
+                <p className="font-semibold text-dark text-sm mb-1">{badge.title}</p>
+                <p className="text-dark/50 text-xs leading-relaxed">{badge.desc}</p>
               </div>
-
-              {/* Decorative corner */}
-              <div className="absolute top-0 right-0 w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-orange-500/10 to-transparent rounded-2xl sm:rounded-3xl" />
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* PRODUITS SECTION */}
-      <section id="produits" className="py-12 sm:py-16 lg:py-20">
-        <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-8 sm:mb-10">
-          <div>
-            <div className="inline-flex items-center gap-2 mb-2 sm:mb-3">
-              <span className="text-2xl sm:text-3xl">🧺</span>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-gray-900">
-                Nos produits
-              </h2>
-            </div>
-            <p className="text-sm sm:text-base md:text-lg text-gray-600">
-              Une sélection prête à ajouter au panier.
-            </p>
+            ))}
           </div>
-
-          <Link 
-            href="/boutique" 
-            className="group inline-flex items-center gap-2 text-sm sm:text-base font-bold text-orange-700 hover:text-orange-800 transition-colors"
-          >
-            Voir toute la boutique
-            <span className="group-hover:translate-x-1 transition-transform">→</span>
-          </Link>
-        </div>
-
-        <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {preview.map((product, idx) => (
-            <div 
-              key={product.id}
-              style={{ animationDelay: `${idx * 0.1}s` }}
-            >
-              <ProductCard product={product} />
-            </div>
-          ))}
-        </div>
-
-        {/* CTA final */}
-        <div className="mt-10 sm:mt-12 text-center">
-          <Link
-            href="/boutique"
-            className="inline-flex items-center gap-2 rounded-xl sm:rounded-2xl bg-gradient-to-r from-gray-900 to-gray-800 px-6 sm:px-8 py-3 sm:py-4 text-white font-bold text-base sm:text-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
-          >
-            Explorer tous nos produits
-            <span>→</span>
-          </Link>
         </div>
       </section>
     </main>

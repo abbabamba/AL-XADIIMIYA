@@ -1,9 +1,10 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
+import { useState } from "react";
 import type { Product } from "@/data/products";
 import { useCart } from "@/store/cart";
-import { useState } from "react";
 
 function formatEUR(priceCents: number) {
   return new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(
@@ -13,104 +14,122 @@ function formatEUR(priceCents: number) {
 
 export default function ProductCard({ product }: { product: Product }) {
   const cart = useCart();
-  const [isAdded, setIsAdded] = useState(false);
+  const [added, setAdded] = useState(false);
 
-  const handleAddToCart = () => {
+  const outOfStock = product.stock === 0;
+
+  const handleAdd = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (outOfStock) return;
     cart.add({
       id: product.id,
       title: product.title,
-      priceCents: product.priceCents,
-      image: product.image,
+      priceCents: product.price_cents,
+      image: product.image_url ?? undefined,
     });
-    
-    // Animation de feedback
-    setIsAdded(true);
-    setTimeout(() => setIsAdded(false), 2000);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 2000);
   };
 
+  const firstLetter = product.title.charAt(0).toUpperCase();
+
   return (
-    <div className="group relative h-full flex flex-col rounded-2xl sm:rounded-3xl border-2 border-orange-200/50 bg-white shadow-md hover:shadow-2xl hover:border-orange-400 transition-all duration-300 overflow-hidden">
-      {/* Badge "Nouveau" ou "Populaire" (optionnel) */}
-      <div className="absolute top-3 left-3 z-10 flex items-center gap-2 rounded-full bg-gradient-to-r from-orange-500 to-orange-600 px-3 py-1.5 shadow-lg">
-        <span className="text-xs font-bold text-white tracking-wide">🔥 POPULAIRE</span>
-      </div>
+    <div className="group relative flex flex-col rounded-2xl overflow-hidden bg-white shadow-md hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 border border-cream-dark hover:border-gold/30">
+      {/* Badges */}
+      {product.is_popular && (
+        <div className="absolute top-3 left-3 z-10 flex items-center gap-1 bg-gold text-dark text-xs font-bold px-3 py-1 rounded-full shadow">
+          🔥 POPULAIRE
+        </div>
+      )}
+      {outOfStock && (
+        <div className="absolute top-3 right-3 z-10 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow">
+          Rupture de stock
+        </div>
+      )}
 
-      {/* Image du produit */}
-      <div className="relative h-48 sm:h-56 w-full overflow-hidden bg-gradient-to-br from-orange-50 to-orange-100/50">
-        <Image 
-          src={product.image} 
-          alt={product.title} 
-          fill 
-          className="object-cover group-hover:scale-110 transition-transform duration-500" 
-        />
-        
-        {/* Overlay au hover */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-      </div>
+      {/* Image area */}
+      <Link href={`/boutique/${product.id}`} className="block relative aspect-square overflow-hidden">
+        {product.image_url && product.image_url.trim() !== "" ? (
+          <Image
+            src={product.image_url}
+            alt={product.title}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-500"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            loading="lazy"
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center relative"
+            style={{ background: "linear-gradient(135deg, #111111, #1A1A1A)" }}>
+            <span className="font-playfair text-7xl font-bold text-gold/60 select-none">
+              {firstLetter}
+            </span>
+            <span className="absolute bottom-3 right-3 text-2xl opacity-40">📦</span>
+          </div>
+        )}
 
-      {/* Contenu */}
-      <div className="flex flex-col flex-1 p-4 sm:p-5">
-        {/* Titre */}
-        <h3 className="font-black text-base sm:text-lg text-gray-900 leading-tight mb-2 group-hover:text-orange-700 transition-colors">
-          {product.title}
-        </h3>
+        {/* Hover overlay — "Voir le produit" */}
+        <div className="absolute inset-0 flex items-center justify-center bg-dark/75 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <span className="font-semibold text-gold text-sm border border-gold/50 rounded-full px-5 py-2 hover:bg-gold hover:text-dark transition-colors">
+            Voir le produit
+          </span>
+        </div>
+      </Link>
+
+      {/* Card body */}
+      <div className="flex flex-col flex-1 p-4">
+        {/* Category */}
+        {product.category && (
+          <span className="inline-flex w-fit bg-gold/20 text-dark text-[10px] uppercase tracking-widest mb-2 font-bold px-2 py-0.5 rounded-full">
+            {product.category}
+          </span>
+        )}
+
+        {/* Title */}
+        <Link href={`/boutique/${product.id}`}>
+          <h3 className="font-playfair text-dark text-lg font-semibold leading-snug mb-1 hover:text-dark-soft transition-colors">
+            {product.title}
+          </h3>
+        </Link>
 
         {/* Description */}
-        <p className="text-xs sm:text-sm text-gray-600 leading-relaxed line-clamp-2 mb-4 flex-1">
+        <p className="text-gray-500 text-sm line-clamp-2 mb-4 flex-1 leading-relaxed">
           {product.description}
         </p>
 
-        {/* Prix et bouton */}
-        <div className="flex items-center justify-between gap-3 mt-auto">
-          {/* Prix */}
-          <div className="flex flex-col">
-            <span className="text-xs text-gray-500 font-medium">Prix</span>
-            <span className="text-xl sm:text-2xl font-black text-orange-600">
-              {formatEUR(product.priceCents)}
-            </span>
-          </div>
+        {/* Footer row */}
+        <div className="flex items-center justify-between gap-3 mt-auto pt-3 border-t border-cream-dark">
+          {/* Price — dark text on white card for contrast */}
+          <span className="font-black text-dark text-xl">
+            {formatEUR(product.price_cents)}
+          </span>
 
-          {/* Bouton d'ajout */}
+          {/* Add to cart */}
           <button
-            onClick={handleAddToCart}
-            className={`relative flex items-center justify-center h-12 sm:h-14 px-5 sm:px-6 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-base transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 ${
-              isAdded 
-                ? 'bg-green-500 text-white' 
-                : 'bg-gradient-to-r from-orange-600 to-orange-500 text-white hover:from-orange-700 hover:to-orange-600'
-            }`}
+            onClick={handleAdd}
+            disabled={outOfStock}
             aria-label="Ajouter au panier"
+            className={`flex items-center justify-center w-11 h-11 rounded-full transition-all duration-300 shadow-md hover:shadow-lg
+              ${outOfStock
+                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                : added
+                  ? "bg-green-500 text-white scale-110"
+                  : "bg-dark text-gold hover:bg-gold hover:text-dark hover:scale-110"
+              }`}
           >
-            {isAdded ? (
-              <span className="flex items-center gap-2">
-                <span className="text-lg">✓</span>
-                <span className="hidden sm:inline">Ajouté</span>
-              </span>
+            {added ? (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
             ) : (
-              <span className="flex items-center gap-2">
-                <span className="text-xl">+</span>
-                <span className="hidden sm:inline">Ajouter</span>
-              </span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <path d="M16 10a4 4 0 0 1-8 0" />
+              </svg>
             )}
           </button>
         </div>
-
-        {/* Barre de confiance */}
-        <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-100">
-          <div className="flex items-center gap-1 text-xs text-gray-600">
-            <span>✅</span>
-            <span className="font-medium">100% Naturel</span>
-          </div>
-          <div className="h-1 w-1 rounded-full bg-gray-300" />
-          <div className="flex items-center gap-1 text-xs text-gray-600">
-            <span>🚚</span>
-            <span className="font-medium">Livraison rapide</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Effet de brillance au hover */}
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
       </div>
     </div>
   );

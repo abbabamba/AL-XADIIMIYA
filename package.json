@@ -3,13 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.6.1",
+    "@supabase/supabase-js": "^2.101.1",
     "next": "16.0.10",
+    "next-pwa": "^5.6.0",
+    "nodemailer": "^6.10.1",
     "react": "19.2.1",
     "react-dom": "19.2.1",
     "stripe": "^20.0.0"
@@ -17,9 +21,11 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/nodemailer": "^6.4.23",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "autoprefixer": "^10.4.22",
+    "baseline-browser-mapping": "^2.10.18",
     "eslint": "^9",
     "eslint-config-next": "16.0.10",
     "postcss": "^8.5.6",
